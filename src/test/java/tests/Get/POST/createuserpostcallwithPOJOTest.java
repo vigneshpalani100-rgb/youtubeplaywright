@@ -1,6 +1,6 @@
-package com.qa.api.tests;
+package tests.Get.POST;
 
-import com.fasterxml.jackson.databind.JsonNode;
+import com.api.data.user;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.microsoft.playwright.APIRequest;
 import com.microsoft.playwright.APIRequestContext;
@@ -13,9 +13,8 @@ import org.testng.annotations.BeforeTest;
 import org.testng.annotations.Test;
 
 import java.io.IOException;
-import java.util.HashMap;
 
-public class createuserAPIpostcalltest {
+public class createuserpostcallwithPOJOTest {
 
     Playwright playwright;
     APIRequest request;
@@ -37,48 +36,43 @@ public class createuserAPIpostcalltest {
     }
 
     public static String getRamdomemail(){
-         emailid = "testpwautomation"+ System.currentTimeMillis() + "@gmail.com";
+        emailid = "testpwautomation"+ System.currentTimeMillis() + "@gmail.com";
         return emailid;
     }
 
     @Test
     public void createusertest() throws IOException {
 
-        HashMap<String, Object> data = new HashMap<String, Object>();
-        data.put("name","Rameh1");
-        data.put("email",getRamdomemail());
-        data.put("gender","male");
-        data.put("status","active");
+        //create user object
+        user user1=new user("Naveen",getRamdomemail(),"male","active");
+
 
         //post call:create a user
         APIResponse apipostresponse = requestContext.post("https://gorest.co.in/public/v2/users",
                 RequestOptions.create()
                         .setHeader("Content-Type", "application/json")
                         .setHeader("Authorization", "Bearer f0e8a1429cb89e2c097b00a1bf8e695b1ec3df0a75d0fc6c30ebf9b8c3b56ab9")
-                        .setData(data));
+                        .setData(user1));
 
         System.out.println(apipostresponse.status());
         Assert.assertEquals(apipostresponse.status(), 201);
         Assert.assertEquals(apipostresponse.statusText(), "Created");
-        System.out.println(apipostresponse.text());
+        String responsetext = apipostresponse.text();
+        System.out.println(responsetext);
 
+        //convert response text/json to pojo--deserialization
         ObjectMapper objectmapper = new ObjectMapper();
-        JsonNode postJsonresponse = objectmapper.readTree(apipostresponse.body());
-        System.out.println(postJsonresponse.toPrettyString());
+        user actuser = objectmapper.readValue(responsetext, user.class);
 
-        //capture id from post json response
-        String userid = postJsonresponse.get("id").asText();
-        System.out.println("userid:"+userid);
+        System.out.println("actual user from the response------>");
+        System.out.println(actuser);
+//        System.out.println(actuser.getEmail());
+        Assert.assertEquals(actuser.getName(),user1.getName());
+        Assert.assertEquals(actuser.getEmail(),user1.getEmail());
+        Assert.assertEquals(actuser.getStatus(),user1.getStatus());
+        Assert.assertEquals(actuser.getGender(),user1.getGender());
+        Assert.assertNotNull(actuser.getId());
 
-        //GET call:Fetch the same user by id
-        System.out.println("=============Get call response================");
-        APIResponse apigetrespose = requestContext.get("https://gorest.co.in/public/v2/users/" + userid, RequestOptions.create()
-                .setHeader("Authorization", "Bearer f0e8a1429cb89e2c097b00a1bf8e695b1ec3df0a75d0fc6c30ebf9b8c3b56ab9"));
-        Assert.assertEquals(apigetrespose.status(),200);
-        Assert.assertEquals(apigetrespose.statusText(),"OK");
-        System.out.println(apigetrespose.text());
-        Assert.assertTrue(apigetrespose.text().contains(userid));
-        Assert.assertTrue(apigetrespose.text().contains("Rameh1"));
-        Assert.assertTrue(apigetrespose.text().contains(emailid));
+
     }
 }

@@ -1,4 +1,4 @@
-package com.qa.api.tests;
+package tests.Get.POST;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -12,10 +12,11 @@ import org.testng.annotations.AfterTest;
 import org.testng.annotations.BeforeTest;
 import org.testng.annotations.Test;
 
+import java.io.File;
 import java.io.IOException;
-import java.util.HashMap;
+import java.nio.file.Files;
 
-public class createusertestwithjsonStringTest {
+public class createuserwithjsonFiletest {
 
     Playwright playwright;
     APIRequest request;
@@ -44,21 +45,17 @@ public class createusertestwithjsonStringTest {
     @Test
     public void createusertest() throws IOException {
 
-        //String Json
-        String reJsonBody="{\n" +
-                "    \"id\": 8115408,\n" +
-                "    \"name\": \"TestingAPI\",\n" +
-                "    \"email\": \"testpwapi@carter.example\",\n" +
-                "    \"gender\": \"male\",\n" +
-                "    \"status\": \"inactive\"\n" +
-                "  }\n";
+        //get Json file
+        byte[] fileBytes=null;
+        File file = new File("./src/test/data/user.json");
+        fileBytes=Files.readAllBytes(file.toPath());
 
         //post call:create a user
         APIResponse apipostresponse = requestContext.post("https://gorest.co.in/public/v2/users",
                 RequestOptions.create()
                         .setHeader("Content-Type", "application/json")
                         .setHeader("Authorization", "Bearer f0e8a1429cb89e2c097b00a1bf8e695b1ec3df0a75d0fc6c30ebf9b8c3b56ab9")
-                        .setData(reJsonBody));
+                        .setData(fileBytes));
 
         System.out.println(apipostresponse.status());
         Assert.assertEquals(apipostresponse.status(), 201);
@@ -81,7 +78,8 @@ public class createusertestwithjsonStringTest {
         Assert.assertEquals(apigetrespose.statusText(),"OK");
         System.out.println(apigetrespose.text());
         Assert.assertTrue(apigetrespose.text().contains(userid));
-        Assert.assertTrue(apigetrespose.text().contains("TestingAPI"));
+        Assert.assertTrue(apigetrespose.text().contains("naveentesting"));
 //        Assert.assertTrue(apigetrespose.text().contains(emailid));
     }
 }
+

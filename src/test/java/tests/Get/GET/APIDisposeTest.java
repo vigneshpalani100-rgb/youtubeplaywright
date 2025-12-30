@@ -1,4 +1,4 @@
-package com.qa.api.tests;
+package tests.Get.GET;
 
 import com.microsoft.playwright.*;
 import com.microsoft.playwright.options.RequestOptions;

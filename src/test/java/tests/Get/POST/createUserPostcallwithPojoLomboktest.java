@@ -1,4 +1,4 @@
-package com.qa.api.tests;
+package tests.Get.POST;
 
 import com.api.data.Users;
 import com.api.data.user;

@@ -1,4 +1,4 @@
-package com.qa.api.tests;
+package tests.Get.POST;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -12,11 +12,10 @@ import org.testng.annotations.AfterTest;
 import org.testng.annotations.BeforeTest;
 import org.testng.annotations.Test;
 
-import java.io.File;
 import java.io.IOException;
-import java.nio.file.Files;
+import java.util.HashMap;
 
-public class createuserwithjsonFiletest {
+public class createuserAPIpostcalltest {
 
     Playwright playwright;
     APIRequest request;
@@ -38,24 +37,25 @@ public class createuserwithjsonFiletest {
     }
 
     public static String getRamdomemail(){
-        emailid = "testpwautomation"+ System.currentTimeMillis() + "@gmail.com";
+         emailid = "testpwautomation"+ System.currentTimeMillis() + "@gmail.com";
         return emailid;
     }
 
     @Test
     public void createusertest() throws IOException {
 
-        //get Json file
-        byte[] fileBytes=null;
-        File file = new File("./src/test/data/user.json");
-        fileBytes=Files.readAllBytes(file.toPath());
+        HashMap<String, Object> data = new HashMap<String, Object>();
+        data.put("name","Rameh1");
+        data.put("email",getRamdomemail());
+        data.put("gender","male");
+        data.put("status","active");
 
         //post call:create a user
         APIResponse apipostresponse = requestContext.post("https://gorest.co.in/public/v2/users",
                 RequestOptions.create()
                         .setHeader("Content-Type", "application/json")
                         .setHeader("Authorization", "Bearer f0e8a1429cb89e2c097b00a1bf8e695b1ec3df0a75d0fc6c30ebf9b8c3b56ab9")
-                        .setData(fileBytes));
+                        .setData(data));
 
         System.out.println(apipostresponse.status());
         Assert.assertEquals(apipostresponse.status(), 201);
@@ -78,8 +78,7 @@ public class createuserwithjsonFiletest {
         Assert.assertEquals(apigetrespose.statusText(),"OK");
         System.out.println(apigetrespose.text());
         Assert.assertTrue(apigetrespose.text().contains(userid));
-        Assert.assertTrue(apigetrespose.text().contains("naveentesting"));
-//        Assert.assertTrue(apigetrespose.text().contains(emailid));
+        Assert.assertTrue(apigetrespose.text().contains("Rameh1"));
+        Assert.assertTrue(apigetrespose.text().contains(emailid));
     }
 }
-

@@ -1,7 +1,7 @@
-package com.qa.api.tests;
+package tests.Get.DELETE;
 
+import com.api.data.Users;
 import com.api.data.user;
-import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.microsoft.playwright.APIRequest;
 import com.microsoft.playwright.APIRequestContext;
@@ -15,7 +15,7 @@ import org.testng.annotations.Test;
 
 import java.io.IOException;
 
-public class createuserpostcallwithPOJOTest {
+public class DeleteUserAPITest {
 
     Playwright playwright;
     APIRequest request;
@@ -42,10 +42,14 @@ public class createuserpostcallwithPOJOTest {
     }
 
     @Test
-    public void createusertest() throws IOException {
+    public void deleteUsertest() throws IOException {
 
-        //create user object
-        user user1=new user("Naveen",getRamdomemail(),"male","active");
+        //create user object:using builder pattern
+        Users users = Users.builder()
+                .name("Ram Automation")
+                .email(getRamdomemail())
+                .gender("male")
+                .status("active").build();
 
 
         //post call:create a user
@@ -53,11 +57,11 @@ public class createuserpostcallwithPOJOTest {
                 RequestOptions.create()
                         .setHeader("Content-Type", "application/json")
                         .setHeader("Authorization", "Bearer f0e8a1429cb89e2c097b00a1bf8e695b1ec3df0a75d0fc6c30ebf9b8c3b56ab9")
-                        .setData(user1));
+                        .setData(users));
 
         System.out.println(apipostresponse.status());
         Assert.assertEquals(apipostresponse.status(), 201);
-        Assert.assertEquals(apipostresponse.statusText(), "Created");
+//        Assert.assertEquals(apipostresponse.statusText(), "Created");
         String responsetext = apipostresponse.text();
         System.out.println(responsetext);
 
@@ -67,13 +71,37 @@ public class createuserpostcallwithPOJOTest {
 
         System.out.println("actual user from the response------>");
         System.out.println(actuser);
-//        System.out.println(actuser.getEmail());
-        Assert.assertEquals(actuser.getName(),user1.getName());
-        Assert.assertEquals(actuser.getEmail(),user1.getEmail());
-        Assert.assertEquals(actuser.getStatus(),user1.getStatus());
-        Assert.assertEquals(actuser.getGender(),user1.getGender());
+
         Assert.assertNotNull(actuser.getId());
+
+        String userId = actuser.getId();
+        System.out.println("new user id is:"+userId);
+
+        //2. delete the user id --204
+        APIResponse apiDeleteresponse = requestContext.delete("https://gorest.co.in/public/v2/users/" + userId,
+                RequestOptions.create()
+                        .setHeader("Authorization", "Bearer f0e8a1429cb89e2c097b00a1bf8e695b1ec3df0a75d0fc6c30ebf9b8c3b56ab9"));
+
+        System.out.println(apiDeleteresponse.status());
+        System.out.println(apiDeleteresponse.statusText());
+
+        Assert.assertEquals(apiDeleteresponse.status(),204);
+        System.out.println("delete user body is=====:"+ apiDeleteresponse.text());
+
+       // 3. get user--user id--404
+        APIResponse apiresponse = requestContext.get("https://gorest.co.in/public/v2/users/"+ userId, RequestOptions.create()
+                .setHeader("Authorization", "Bearer f0e8a1429cb89e2c097b00a1bf8e695b1ec3df0a75d0fc6c30ebf9b8c3b56ab9"));
+
+        System.out.println(apiresponse.text());
+
+        int statuscode = apiresponse.status();
+        System.out.println("Response status code:"+statuscode);
+        Assert.assertEquals(statuscode,404);
+        Assert.assertEquals(apiresponse.statusText(),"Not Found");
+
+        Assert.assertTrue(apiresponse.text().contains("Resource not found"));
 
 
     }
 }
+
